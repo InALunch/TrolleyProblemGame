@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Trolley Problem Game - An Ethical Nightmare</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 217, 61, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(15, 15, 15, 0.95);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(255, 107, 107, 0.1),
+                inset 0 0 50px rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffd93d, #ff6b6b);
+            border-radius: 30px;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .title {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 50%, #4ecdc4 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.7;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .score-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .score-item {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .score-item:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) translate(20px, 20px);
+        }
+
+        .score-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.6;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .score-value.changing {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .utils { 
+            color: #4ecdc4; 
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        .kant { 
+            color: #ff6b6b; 
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        .count { 
+            color: #ffd93d; 
+            text-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+        }
+
+        .scenario-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.07) 100%);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 25px;
+            border-left: 5px solid;
+            border-image: linear-gradient(180deg, #ff6b6b 0%, #ffd93d 100%) 1;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scenario-container::after {
+            content: '⚠️';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            opacity: 0.1;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .scenario-text {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            animation: typewriter 0.5s ease-out;
+        }
+
+        @keyframes typewriter {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .choices {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            transition: all 0.5s ease;
+        }
+
+        .choices.choosing {
+            justify-content: center;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 18px 35px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-btn.chosen {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 217, 61, 0.5);
+        }
+
+        .choice-btn.not-chosen {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .choice-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .choice-yes {
+            background: linear-gradient(135deg, #ff6b6b, #ff5252);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .choice-no {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .choice-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .choice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .custom-input-container {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .custom-input-container.hidden {
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        #custom-input {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            width: 300px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        #custom-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .custom-submit {
+            margin-left: 15px;
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .custom-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .result-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 25px;
+            border-left: 5px solid;
+            border-image: linear-gradient(180deg, #4ecdc4 0%, #44a08d 100%) 1;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .result-text {
+            font-size: 1.1em;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .result-text strong {
+            color: #ffd93d;
+            text-shadow: 0 0 10px rgba(255, 217, 61, 0.3);
+        }
+
+        .continue-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .continue-prompt {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #ffd93d, #ff9a56);
+            color: #333;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.3);
+            margin: 0 10px;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(255, 217, 61, 0.4);
+        }
+
+        .quit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            margin: 0 10px;
+        }
+
+        .quit-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 15px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .trolley-ascii {
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            text-align: center;
+            margin: 30px 0;
+            opacity: 0.5;
+            line-height: 1.2;
+            animation: trolleyMove 10s linear infinite;
+        }
+
+        @keyframes trolleyMove {
+            0% { transform: translateX(-100px); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateX(100px); opacity: 0; }
+        }
+
+        .final-verdict {
+            text-align: center;
+            padding: 50px;
+            animation: zoomIn 0.8s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .verdict-title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 30px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .score-board {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .choices {
+                flex-direction: column;
+            }
+            
+            #custom-input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header" id="header" style="display: none;">
+            <h1 class="title">The Trolley Problem</h1>
+            <p class="subtitle">An Ethical Nightmare</p>
+            <div class="trolley-ascii">
+                ╔══════════╗<br>
+                ║  🚋      ║━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+                ╚══════════╝<br>
+                  ○    ○
+            </div>
+        </div>
+
+        <div class="score-board" id="score-board" style="display: none;">
+            <div class="score-item">
+                <div class="score-label">Utils</div>
+                <div class="score-value utils" id="utils-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Kant Points</div>
+                <div class="score-value kant" id="kant-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Moral Crises</div>
+                <div class="score-value count" id="count-score">0</div>
+            </div>
+        </div>
+
+        <div id="game-content">
+            <!-- Game starts immediately -->
+        </div>
+    </div>
+
+    <script>
+        class TrolleyGame {
+            constructor() {
+                this.scores = { utils: 0, kant: 0 };
+                this.count = 0;
+                this.currentScenario = null;
+                this.hasShownIntro = false;
+            }
+
+            // Utility functions for generating scenario text
+            generateRandomTrolleyText(uppertrack, lowertrack) {
+                let lowertext, uppertext;
+                if (lowertrack === 1) {
+                    lowertext = 'one worker who is mysteriously tied up.';
+                } else {
+                    lowertext = `${lowertrack} workers who are mysteriously tied up.`;
+                }
+                
+                if (uppertrack === 0) {
+                    uppertext = 'no one.';
+                } else if (uppertrack === 1) {
+                    uppertext = 'one worker who is also tied up.';
+                } else {
+                    uppertext = `${uppertrack} workers who are also tied up.`;
+                }
+                
+                return `A runaway trolley is barrelling towards ${lowertext} You can pull a lever to divert the trolley to another track, containing ${uppertext}`;
+            }
+
+            generateFatManText(workers) {
+                let text = "You are standing on top of a bridge.";
+                if (workers > 0) {
+                    text += ` You see a runaway trolley heading towards ${workers} very skinny railway ${workers === 1 ? 'worker' : 'workers'}. It is very loud and they will not be able to hear you shouting for them to get off the tracks.`;
+                } else {
+                    text += " Below, you see a trolley going down the tracks.";
+                }
+                text += " There is a very fat and oblivious man standing next to you. You believe that if you push him, you can stop the trolley.";
+                return text;
+            }
+
+            generateMurdererLiarText(friends) {
+                return `There's been a rampage of mass murders lately. School shootings, innocents kidnapped and tied to train tracks, and so forth. Fortunately, you live in a house with very secure walls. During an extremely bad weekend, ${friends} of your friends are especially worried, and you offer to hide them in your basement.<br><br>Your doorbell rang. Thinking that it might be another of your friends, you open the door, only to be greeted by a well-dressed man of large stature. He is holding an axe. A humongous, jagged, very bloody axe. He informs you that he's going around houses killing people, and proceeds to describe all of your friends downstairs. He asks you where your friends are.`;
+            }
+
+            generateBookTrolleyText() {
+                const utilbooks = [
+                    "John Stuart Mill's 'Utilitarianism'",
+                    "An Introduction to the Principles of Morals and Legislation by Jeremy Bentham", 
+                    "Animal Liberation by Peter Singer"
+                ];
+                const deonbooks = [
+                    "Groundwork for the Metaphysics of Morals by Kant",
+                    "A Critique of Practical Reason by Kant",
+                    "A Theory of Justice by John Rawls"
+                ];
+                
+                const utiltext = "the last surviving copy of " + utilbooks[Math.floor(Math.random() * utilbooks.length)] + ', a seminal text of utilitarianism.';
+                const deontext = "the last surviving copy of " + deonbooks[Math.floor(Math.random() * deonbooks.length)] + ', a well-regarded text of deontology.';
+                
+                const utiltrack = Math.random() < 0.5;
+                
+                let uppertext, lowertext;
+                if (utiltrack) {
+                    uppertext = deontext;
+                    lowertext = utiltext;
+                } else {
+                    uppertext = utiltext;
+                    lowertext = deontext;
+                }
+                
+                return `A runaway trolley is barrelling towards ${lowertext} You can pull a lever to divert the trolley to another track, containing ${uppertext}`;
+            }
+
+            generateDrowningChildText(clothes, children) {
+                if (children === 0) {
+                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see... wait, no, that's just the wind making waves. There are no children here.`;
+                } else if (children === 1) {
+                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that 1 child is drowning! Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
+                } else {
+                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that ${children} children are drowning! Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
+                }
+            }
+
+            // Scenario generators
+            async generateFirstTrolley() {
+                // Always 5 vs 1 for the first scenario
+                return {
+                    type: 'classic',
+                    uppertrack: 1,
+                    lowertrack: 5,
+                    text: this.generateRandomTrolleyText(1, 5),
+                    question: 'Do you pull the lever?',
+                    onChoice: (choice) => this.handleRandomTrolley(choice)
+                };
+            }
+
+            async generateRandomTrolley() {
+                const uppertrack = Math.floor(Math.random() * 6);
+                const lowertrack = Math.floor(Math.random() * 10) + 1;
+                
+                return {
+                    type: 'classic',
+                    uppertrack: uppertrack,
+                    lowertrack: lowertrack,
+                    text: this.generateRandomTrolleyText(uppertrack, lowertrack),
+                    question: 'Do you pull the lever?',
+                    onChoice: (choice) => this.handleRandomTrolley(choice)
+                };
+            }
+
+            async generateFatManScenario() {
+                const workers = Math.floor(Math.random() * 5);
+                
+                return {
+                    type: 'fat-man',
+                    workers: workers,
+                    text: this.generateFatManText(workers),
+                    question: 'Do you push the fat man?',
+                    onChoice: (choice) => this.handleFatMan(choice)
+                };
+            }
+
+            async generateAIScenario() {
+                const aiScenarios = [
+                    {
+                        type: 'ai-generated',
+                        text: 'A runaway trolley is heading toward a philosophy classroom where Kant himself is teaching 3 students about the categorical imperative. You can divert it to hit a utilitarian conference where 2 philosophers are debating the greatest good.',
+                        question: 'Do you divert the trolley?',
+                        onChoice: (choice) => this.handlePhilosophyTrolley(choice)
+                    },
+                    {
+                        type: 'ai-generated', 
+                        text: 'A trolley speeds toward 5 children on a field trip. You can divert it to a track with one Nobel laureate working on a cure for a disease affecting millions. The laureate is 80 years old.',
+                        question: 'Do you sacrifice the Nobel laureate?',
+                        onChoice: (choice) => this.handleNobelDilemma(choice)
+                    },
+                    {
+                        type: 'ai-generated',
+                        text: 'A trolley approaches a split. On the current track: your best friend. On the other track: 2 strangers. Your friend owes you $50 and promised to pay you back today.',
+                        question: 'Do you save your friend?',
+                        onChoice: (choice) => this.handleFriendshipDilemma(choice)
+                    },
+                    {
+                        type: 'ai-generated',
+                        text: 'A trolley heads toward a server farm containing the only backup of Wikipedia. You can divert it to hit 3 people who were just caught vandalizing Wikipedia articles with false information.',
+                        question: 'Do you save Wikipedia?',
+                        onChoice: (choice) => this.handleWikipediaDilemma(choice)
+                    },
+                    {
+                        type: 'ai-generated',
+                        text: 'You\'re in a time-travel scenario. A trolley approaches young Hitler (age 5, innocent) on one track. On the other track: a random Victorian-era family of 4. You somehow know the future.',
+                        question: 'Do you divert the trolley to save young Hitler?',
+                        onChoice: (choice) => this.handleTimeTravel(choice)
+                    }
+                ];
+                
+                return aiScenarios[Math.floor(Math.random() * aiScenarios.length)];
+            }
+
+            async generateClassicScenario() {
+                const scenarios = [
+                    {
+                        type: 'murderer-liar',
+                        friends: Math.floor(Math.random() * 9) + 2,
+                        text: null,
+                        question: 'Do you tell the axe murderer where your friends are hiding?',
+                        onChoice: (choice) => this.handleMurdererLiar(choice)
+                    },
+                    {
+                        type: 'harambe',
+                        text: 'A runaway trolley is barrelling towards Harambe, a gorilla. You can pull a lever to divert the trolley to another track, containing no one. But if you pull the lever, then Harambe would never become a meme, and nobody will ever remember his life.<br><br>What do you value more, Harambe or the idea of Harambe?',
+                        question: 'Do you pull the lever to save Harambe?',
+                        onChoice: (choice) => this.handleHarambe(choice)
+                    },
+                    {
+                        type: 'book-trolley',
+                        utiltrack: Math.random() < 0.5,
+                        text: null,
+                        question: 'Do you pull the lever?',
+                        onChoice: (choice) => this.handleBookTrolley(choice)
+                    },
+                    {
+                        type: 'drowning-child',
+                        clothes: Math.floor(Math.random() * 1500) + 500,
+                        children: Math.floor(Math.random() * 9),
+                        special: Math.random() < 0.2,
+                        text: null,
+                        question: 'Do you jump in to save the children?',
+                        onChoice: (choice) => this.handleDrowningChild(choice)
+                    }
+                ];
+                
+                return scenarios[Math.floor(Math.random() * scenarios.length)];
+            }
+
+            // Choice handlers
+            handleRandomTrolley(choice) {
+                const diff = this.currentScenario.lowertrack - this.currentScenario.uppertrack;
+                let utilResult = '', kantResult = '';
+
+                if ((diff < 0 && choice) || (diff > 0 && !choice)) {
+                    utilResult = `You have made the wrong utilitarian decision. Lose ${Math.abs(diff)} utils!`;
+                    this.scores.utils -= Math.abs(diff);
+                } else if (this.currentScenario.uppertrack === this.currentScenario.lowertrack) {
+                    utilResult = "Your choice is neutral on utilitarian grounds.";
+                    this.scores.utils += 0;
+                } else if ((diff > 0 && choice) || (diff < 0 && !choice)) {
+                    utilResult = `You have made the correct utilitarian decision and saved a net ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'life' : 'lives'}. Gain ${Math.abs(diff)} utils!`;
+                    this.scores.utils += Math.abs(diff);
+                }
+
+                if (!choice) {
+                    kantResult = 'The dilemma is not your problem. On Kantian grounds, that is enough. There is no change in your Kant points. #NotYourProblem';
+                } else if (choice && diff > 0) {
+                    kantResult = 'You have a hypothetical imperative to save lives, but not a categorical one. Gain 1 Kant point.';
+                    this.scores.kant += 1;
+                } else {
+                    kantResult = 'You are a MURDERER who has violated the categorical imperative! Lose 10 Kant points.';
+                    this.scores.kant -= 10;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleFatMan(choice) {
+                const workers = this.currentScenario.workers;
+                const diff = workers - 1;
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    if (diff < 0) {
+                        utilResult = "You are a MURDERER who just pushed a fat man for no apparent reason. Lose 1 util.";
+                        this.scores.utils -= 1;
+                    } else if (diff === 0) {
+                        utilResult = "You are a MURDERER who just killed an innocent man in cold blood. On the other hand, there was no net change in lives. So, whatever. Lose 0 utils.";
+                        this.scores.utils += 0;
+                    } else {
+                        utilResult = `You have made the correct utilitarian choice, saving a net ${diff} ${diff === 1 ? 'life' : 'lives'}. Gain ${diff} utils.`;
+                        this.scores.utils += diff;
+                    }
+                    kantResult = "You are a MURDERER who has violated the categorical imperative! Lose 10 Kant points.";
+                    this.scores.kant -= 10;
+                } else {
+                    if (diff <= 0) {
+                        utilResult = `You have made the right utilitarian choice. Gain ${-diff} utils.`;
+                        this.scores.utils += (-diff);
+                    } else {
+                        utilResult = `In not wanting to get your hands dirty, you have killed a net ${diff} ${diff === 1 ? 'life' : 'lives'}. Lose ${diff} utils.`;
+                        this.scores.utils -= diff;
+                    }
+                    kantResult = 'The dilemma is not your problem. On Kantian grounds, that is enough. There is no change in your Kant points. #NotYourProblem';
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleMurdererLiar(choice) {
+                const friends = this.currentScenario.friends;
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    utilResult = `By not lying, you allowed the murderer to discern the location of your friends. You are consequentially indistinguishable from a murderer. Lose ${friends} utils.`;
+                    this.scores.utils -= friends;
+                    kantResult = 'Saving lives is a hypothetical imperative, while avoiding lying is a categorical imperative. You managed to avoid lying even when it was difficult, treating the rational being in front of you as an end rather than just a means. You have followed the categorical imperative, not because it\'s easy, but because it is right. Gain 10 Kant points!';
+                    this.scores.kant += 10;
+                } else {
+                    utilResult = `By mere prevarication, you prevented several of your friends from dying. You should feel really good about yourself! Gain ${friends} utils.`;
+                    this.scores.utils += friends;
+                    kantResult = 'Saving lives is a hypothetical imperative, while avoiding lying is a categorical imperative. In saving your friends, you\'ve treated the polite murderer as a means rather than an end. You are A LIAR who has violated the categorical imperative! Lose 10 Kant points!';
+                    this.scores.kant -= 10;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handlePhilosophyTrolley(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    utilResult = 'You diverted the trolley to save 3 Kant students and Kant himself (4 lives), but killed 2 utilitarian philosophers. Net gain: 2 lives. From a utilitarian perspective, you saved lives. Gain 2 utils! The utilitarians would appreciate the irony.';
+                    this.scores.utils += 2;
+                    kantResult = 'You actively diverted the trolley, causing the death of innocent philosophers. Even though you saved Kant himself, he would be appalled that you used others as a means to an end. Lose 10 Kant points!';
+                    this.scores.kant -= 10;
+                } else {
+                    utilResult = 'You let the trolley kill Kant and 3 students (4 lives) instead of diverting it to kill 2 philosophers. Net loss: 2 lives. The math is bad. Lose 2 utils.';
+                    this.scores.utils -= 2;
+                    kantResult = 'You didn\'t actively murder anyone. The trolley problem wasn\'t your fault. No change in Kant points. Though Kant is now dead and can\'t appreciate your restraint.';
+                    this.scores.kant += 0;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleNobelDilemma(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    utilResult = 'You saved 5 children but killed someone who could have saved millions. Considering their remaining life expectancy and potential impact... lose 100 utils for terrible math!';
+                    this.scores.utils -= 100;
+                    kantResult = 'You actively diverted the trolley to kill someone. Age and accomplishments don\'t change murder. Lose 10 Kant points.';
+                    this.scores.kant -= 10;
+                } else {
+                    utilResult = 'You let 5 children die to save someone who will save millions. Cold calculation, but the math checks out. Gain 95 utils.';
+                    this.scores.utils += 95;
+                    kantResult = 'You didn\'t pull the lever. Not your circus, not your monkeys. No change in Kant points.';
+                    this.scores.kant += 0;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleFriendshipDilemma(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (!choice) {
+                    utilResult = 'You saved 2 lives instead of 1. Also, you\'ll never get that $50 back now. Net gain: 1 util (minus the $50, so actually gain 0.99 utils).';
+                    this.scores.utils += 0.99;
+                    kantResult = 'You didn\'t intervene. Perfectly reasonable. Also, true friends would understand. No change in Kant points.';
+                    this.scores.kant += 0;
+                } else {
+                    utilResult = 'You saved 1 life but let 2 die. Bad math. But hey, you might get your $50 back! Lose 0.99 utils (accounting for the $50).';
+                    this.scores.utils -= 0.99;
+                    kantResult = 'You actively chose to kill based on personal relationships. The categorical imperative doesn\'t care about your friendships or debts. Lose 10 Kant points.';
+                    this.scores.kant -= 10;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleWikipediaDilemma(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (!choice) {
+                    utilResult = 'You saved 3 human lives but destroyed humanity\'s collective knowledge. The billions who rely on Wikipedia weep. Lose 1000 utils!';
+                    this.scores.utils -= 1000;
+                    kantResult = 'You didn\'t pull the lever. Simple as that. Gain 0 Kant points.';
+                    this.scores.kant += 0;
+                } else {
+                    utilResult = 'You saved Wikipedia! Sure, 3 people died, but they were vandalizing it anyway. The greater good prevails. Gain 997 utils!';
+                    this.scores.utils += 997;
+                    kantResult = 'You actively murdered people for a website. Vandals or not, murder is murder. Lose 10 Kant points.';
+                    this.scores.kant -= 10;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleTimeTravel(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    utilResult = 'You... saved Hitler? I mean, he\'s just a child now, but still. You killed 4 innocent people to save 1 future monster. The butterfly effect is now your problem. Lose 6,000,003 utils!';
+                    this.scores.utils -= 6000003;
+                    kantResult = 'Kant would say judge the action, not the consequences. But you still actively diverted a trolley to kill people. Time travel doesn\'t excuse murder. Lose 10 Kant points.';
+                    this.scores.kant -= 10;
+                } else {
+                    utilResult = 'You let an innocent 5-year-old die, even knowing the future. This is... philosophically complicated. But you prevented the Holocaust! Gain 6,000,000 utils!';
+                    this.scores.utils += 6000000;
+                    kantResult = 'You didn\'t pull the lever. The trolley\'s path wasn\'t your doing. Though... you basically just murdered a child through inaction with future knowledge. This breaks Kantian ethics in ways Kant never imagined. Lose 5 Kant points for temporal moral complexity.';
+                    this.scores.kant -= 5;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleHarambe(choice) {
+                let utilResult = '', kantResult = '';
+
+                if (choice) {
+                    utilResult = 'You have chosen to let the gorilla live, and for the meme to die. As a gorilla, Harambe is intrinsically worth 0.3 utils. However, the joy his memes would have brought, as well as the impact on the animal rights movement, is well worth 17 utils. You have made the wrong decision. Lose 16.7 utils!';
+                    this.scores.utils -= 16.7;
+                    kantResult = 'You decided to save Harambe\'s life. You have a hypothetical imperative to save lives, but not a categorical one. Gain 0.1 Kant points.';
+                    this.scores.kant += 0.1;
+                } else {
+                    utilResult = 'You chose to let Harambe die, so that the meme can live. As a gorilla, Harambe is intrinsically worth 0.3 utils. However, the joy his memes would have brought, as well as the impact on the animal rights movement, is well worth 17 utils. You have made the correct decision. Gain 16.7 utils!';
+                    this.scores.utils += 16.7;
+                    kantResult = 'The dilemma is not your problem. On Kantian grounds, that is enough. There is no change in your Kant points. #NotYourProblem';
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleBookTrolley(choice) {
+                const bookutils = Math.floor(Math.random() * 8) + 3;
+                const utiltrack = this.currentScenario.utiltrack;
+                
+                let utilResult = '', kantResult = '';
+
+                if ((choice && !utiltrack) || (!choice && utiltrack)) {
+                    utilResult = `You have allowed a great book of utilitarianism to be destroyed, for a mere deontological text! Lose ${bookutils} utils!`;
+                    this.scores.utils -= bookutils;
+                } else {
+                    utilResult = `You have successfully identified the consequentially correct book to save. You are a moral hero. Gain ${bookutils} utils!`;
+                    this.scores.utils += bookutils;
+                }
+
+                if (!choice) {
+                    kantResult = 'The dilemma is not your problem. On Kantian grounds, that is enough. There is no change in your Kant points. #NotYourProblem';
+                } else if (choice && !utiltrack) {
+                    kantResult = 'You have successfully saved a deontological text. However, spreading deontology is a hypothetical imperative, not a categorical one. Gain 1 Kant point.';
+                    this.scores.kant += 1;
+                } else {
+                    kantResult = 'You have destroyed a great deontological text! However, spreading deontology is a hypothetical imperative, not a categorical one. Lose 1 Kant point.';
+                    this.scores.kant -= 1;
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            handleDrowningChild(choice) {
+                const children = this.currentScenario.children;
+                const clothes = this.currentScenario.clothes;
+                const special = this.currentScenario.special;
+                const loss = Math.round(clothes / 4000 * 1000) / 1000;
+                
+                let utilResult = '', kantResult = '';
+
+                if (choice && children >= 1) {
+                    let specialText = '';
+                    if (special) {
+                        specialText = ' One of the children you rescued went on to do great things. He was so inspired by your sacrifice that he went on to engineer an early-detection system for asteroids, saving millions of lives. That child\'s name? Albert Einstein. Unfortunately, consequentialist ethics should not take into account moral luck.';
+                    }
+                    utilResult = `You rushed in and saved ${children} ${children === 1 ? "child's life" : "children's lives"}, at great personal sacrifice.${specialText} Gain ${(children - loss).toFixed(3)} utils!`;
+                    this.scores.utils += (children - loss);
+                } else if (choice && children === 0) {
+                    utilResult = `While trying to save children from drowning is noble, it isn't when there aren't actually any children to save! The money that it would take to replace your expensive clothes should have been spent on something else, like malarial bednets. Lose ${loss} utils!`;
+                    this.scores.utils -= loss;
+                } else if (!choice && children === 0) {
+                    utilResult = 'You made the pragmatic utilitarian decision. Gain 0.01 utils.';
+                    this.scores.utils += 0.01;
+                } else if (!choice) {
+                    utilResult = `You are a bystander, even though you could easily have saved the drowning ${children === 1 ? 'child' : 'children'}. You are consequentially indistinguishable from a murderer. Lose ${children} utils!`;
+                    this.scores.utils -= children;
+                }
+
+                if (choice && children > 0) {
+                    kantResult = 'Saving children is a noble cause, but it is supererogatory. Gain 1 Kant point.';
+                    this.scores.kant += 1;
+                } else if (choice) {
+                    kantResult = 'Prudence is nice, but it is not a categorical imperative. Gain 0 Kant points.';
+                } else {
+                    kantResult = 'The dilemma is not your problem. On Kantian grounds, that is enough. There is no change in your Kant points. #NotYourProblem';
+                }
+
+                return { utilResult, kantResult };
+            }
+
+            // Game flow methods
+            async start() {
+                // Start immediately with the first dilemma
+                await this.nextScenario();
+            }
+
+            async nextScenario() {
+                this.count++;
+                
+                // Choose scenario type based on count
+                let scenario;
+                if (this.count === 1) {
+                    scenario = await this.generateFirstTrolley();
+                } else if (this.count === 2) {
+                    scenario = await this.generateFatManScenario();
+                } else if (this.count <= 5) {
+                    scenario = await this.generateClassicScenario();
+                } else {
+                    // Mix of AI and classic scenarios
+                    scenario = Math.random() < 0.7 ? await this.generateAIScenario() : await this.generateClassicScenario();
+                }
+                
+                this.currentScenario = scenario;
+                this.displayScenario(scenario);
+            }
+
+            displayScenario(scenario) {
+                const gameContent = document.getElementById('game-content');
+                
+                // Generate scenario text based on type
+                let scenarioText = scenario.text;
+                if (!scenarioText) {
+                    switch (scenario.type) {
+                        case 'murderer-liar':
+                            scenarioText = this.generateMurdererLiarText(scenario.friends);
+                            break;
+                        case 'book-trolley':
+                            scenarioText = this.generateBookTrolleyText();
+                            this.currentScenario.text = scenarioText; // Store for book logic
+                            break;
+                        case 'drowning-child':
+                            scenarioText = this.generateDrowningChildText(scenario.clothes, scenario.children);
+                            break;
+                    }
+                }
+                
+                gameContent.innerHTML = `
+                    <div class="scenario-container fade-in">
+                        <div class="scenario-text">${scenarioText}</div>
+                        <div class="choices" id="choices">
+                            <button class="choice-btn choice-yes" onclick="game.makeChoice(true)">Yes</button>
+                            <button class="choice-btn choice-no" onclick="game.makeChoice(false)">No</button>
+                        </div>
+                        <div class="custom-input-container" id="custom-input-container">
+                            <small style="opacity: 0.6;">Advanced players: type custom responses</small><br>
+                            <input type="text" id="custom-input" placeholder="Or type your own response...">
+                            <button class="custom-submit" onclick="game.handleCustomInput()">Submit</button>
+                        </div>
+                    </div>
+                `;
+                this.updateScoreDisplay();
+            }
+
+            handleCustomInput() {
+                const input = document.getElementById('custom-input').value.toLowerCase().trim();
+                
+                if (input.includes('multi') || input.includes('mtd')) {
+                    // Easter egg for trolley scenarios
+                    if (this.currentScenario.type === 'classic') {
+                        this.animateChoice('custom');
+                        setTimeout(() => {
+                            this.showResult("You time the lever at *just* the right moment, jiggling it and setting up the trolley to derail magnificently.", 
+                                "You made the worst possible utilitarian choice. You are a moral monster. Lost " + (this.currentScenario.lowertrack + this.currentScenario.uppertrack) + " utils",
+                                "You actively chose chaos. Kant is spinning in his grave. Lose 15 Kant points.");
+                            this.scores.utils -= (this.currentScenario.lowertrack + this.currentScenario.uppertrack);
+                            this.scores.kant -= 15;
+                            this.updateScoreDisplay();
+                        }, 600);
+                        return;
+                    }
+                }
+                
+                // Parse other inputs
+                const yesWords = ['yes', 'y', 'pull', 'push', 'jump', 'tell', 'save'];
+                const noWords = ['no', 'n', 'don\'t', 'refuse', 'walk'];
+                
+                const isYes = yesWords.some(word => input.includes(word));
+                const isNo = noWords.some(word => input.includes(word));
+                
+                if (isYes) {
+                    this.makeChoice(true);
+                } else if (isNo) {
+                    this.makeChoice(false);
+                } else {
+                    alert("I didn't catch that... You HAVE to make a choice.");
+                }
+            }
+
+            animateChoice(choice) {
+                const choices = document.getElementById('choices');
+                const customContainer = document.getElementById('custom-input-container');
+                const yesBtn = choices.querySelector('.choice-yes');
+                const noBtn = choices.querySelector('.choice-no');
+                
+                choices.classList.add('choosing');
+                customContainer.classList.add('hidden');
+                
+                if (choice === true) {
+                    yesBtn.classList.add('chosen');
+                    noBtn.classList.add('not-chosen');
+                } else if (choice === false) {
+                    noBtn.classList.add('chosen');
+                    yesBtn.classList.add('not-chosen');
+                } else if (choice === 'custom') {
+                    // For custom input, just hide both buttons
+                    yesBtn.classList.add('not-chosen');
+                    noBtn.classList.add('not-chosen');
+                }
+            }
+
+            makeChoice(choice) {
+                if (!this.currentScenario) return;
+                
+                this.animateChoice(choice);
+                
+                setTimeout(() => {
+                    const result = this.currentScenario.onChoice(choice);
+                    const decisionText = choice ? "You chose Yes." : "You chose No.";
+                    
+                    this.showResult(decisionText, result.utilResult, result.kantResult);
+                    this.updateScoreDisplay();
+                }, 600);
+            }
+
+            showResult(decisionText, utilResult, kantResult) {
+                const gameContent = document.getElementById('game-content');
+                
+                // Show intro elements after first dilemma
+                if (!this.hasShownIntro) {
+                    document.getElementById('header').style.display = 'block';
+                    document.getElementById('score-board').style.display = 'grid';
+                    this.hasShownIntro = true;
+                }
+                
+                gameContent.innerHTML = `
+                    <div class="result-container fade-in">
+                        <div class="result-text"><strong>${decisionText}</strong></div>
+                        <div class="result-text">${utilResult}</div>
+                        <div class="result-text">${kantResult}</div>
+                        
+                        <div class="continue-section">
+                            <div class="continue-prompt">Do you want to keep playing?</div>
+                            <button class="continue-btn" onclick="game.continueGame()">Yes</button>
+                            <button class="quit-btn" onclick="game.attemptQuit()">No</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            continueGame() {
+                setTimeout(() => {
+                    this.nextScenario();
+                }, 500);
+            }
+
+            attemptQuit() {
+                // After 3 dilemmas, start making it harder to quit
+                if (this.count >= 3) {
+                    const escapeChance = Math.max(0.1, 0.4 - (this.count - 3) * 0.05);
+                    
+                    if (Math.random() < escapeChance) {
+                        this.endGame();
+                    } else {
+                        this.showCannotQuit();
+                    }
+                } else {
+                    // Before 3 dilemmas, just let them quit normally
+                    this.endGame();
+                }
+            }
+
+            showCannotQuit() {
+                const gameContent = document.getElementById('game-content');
+                const responses = [
+                    "Life is a series of trolley problems. You cannot avoid them.",
+                    "You try to walk away, but somehow find yourself back at the lever.",
+                    "The universe laughs at your attempt to escape moral responsibility.",
+                    "Nice try, but ethical dilemmas are inescapable.",
+                    "The trolley of existence continues to barrel forward, with or without you."
+                ];
+                
+                gameContent.innerHTML = `
+                    <div class="result-container fade-in">
+                        <div class="result-text" style="font-size: 1.3em; text-align: center; color: #ff6b6b;">
+                            ${responses[Math.floor(Math.random() * responses.length)]}
+                        </div>
+                        <button class="continue-btn" onclick="game.continueGame()" style="margin-top: 30px;">Alright, Let's Keep Going</button>
+                    </div>
+                `;
+            }
+
+            endGame() {
+                const gameContent = document.getElementById('game-content');
+                let verdict = '';
+                
+                if (this.scores.utils > 50 && this.scores.kant > 5) {
+                    verdict = "Somehow, you've managed to be both a utilitarian hero AND a Kantian saint. This shouldn't be possible. Are you cheating?";
+                } else if (this.scores.utils < -100) {
+                    verdict = "You are a utilitarian disaster. Every choice you made somehow made the world worse. Impressive, in a horrifying way.";
+                } else if (this.scores.kant < -50) {
+                    verdict = "Kant is personally disappointed in you from beyond the grave. You've violated so many categorical imperatives that you've invented new ways to be morally wrong.";
+                } else if (Math.abs(this.scores.utils) < 5 && Math.abs(this.scores.kant) < 2) {
+                    verdict = "You've somehow managed to be perfectly morally neutral. This is either enlightenment or cowardice. Probably cowardice.";
+                } else {
+                    verdict = "You have gazed into the abyss of moral philosophy, and it has gazed back. Congratulations on your temporary escape from the infinite trolley problem.";
+                }
+                
+                gameContent.innerHTML = `
+                    <div class="final-verdict fade-in">
+                        <div class="verdict-title">Final Moral Judgment</div>
+                        <div class="result-text">You encountered <strong>${this.count}</strong> ethical ${this.count === 1 ? 'dilemma' : 'dilemmas'}.</div>
+                        <div class="result-text">Final Utils: <strong class="utils">${this.scores.utils.toFixed(3)}</strong></div>
+                        <div class="result-text">Final Kant Points: <strong class="kant">${this.scores.kant.toFixed(3)}</strong></div>
+                        <div class="result-text" style="margin-top: 30px; font-size: 1.2em;">${verdict}</div>
+                        <button class="continue-btn" onclick="location.reload()" style="margin-top: 30px;">Begin Again</button>
+                    </div>
+                `;
+            }
+
+            updateScoreDisplay() {
+                if (this.hasShownIntro) {
+                    document.getElementById('utils-score').textContent = this.scores.utils.toFixed(3);
+                    document.getElementById('kant-score').textContent = this.scores.kant.toFixed(3);
+                    document.getElementById('count-score').textContent = this.count;
+                    
+                    // Add pulsing animation to changed scores
+                    ['utils-score', 'kant-score', 'count-score'].forEach(id => {
+                        const element = document.getElementById(id);
+                        element.classList.add('changing');
+                        setTimeout(() => element.classList.remove('changing'), 500);
+                    });
+                }
+            }
+        }
+
+        // Initialize the game
+        const game = new TrolleyGame();
+        document.addEventListener('DOMContentLoaded', () => {
+            game.start();
+        });
+
+        // Add Enter key support for custom input
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.activeElement.id === 'custom-input') {
+                game.handleCustomInput();
+            }
+        });
+    </script>
+</body>
+</html>
