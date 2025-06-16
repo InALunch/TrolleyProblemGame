@@ -1068,41 +1068,44 @@ What do you value more, Harambe or the idea of Harambe?`,
             }
 
             displayScenario(scenario) {
-                const gameContent = document.getElementById('game-content');
-                
-                // Generate scenario text based on type
-                let scenarioText = scenario.text;
-                if (!scenarioText) {
-                    switch (scenario.type) {
-                        case 'murderer-liar':
-                            scenarioText = this.generateMurdererLiarText(scenario.friends);
-                            break;
-                        case 'book-trolley':
-                            scenarioText = this.generateBookTrolleyText();
-                            this.currentScenario.text = scenarioText; // Store for book logic
-                            break;
-                        case 'drowning-child':
-                            scenarioText = this.generateDrowningChildText(scenario.clothes, scenario.children);
-                            break;
-                    }
-                }
-                
-                gameContent.innerHTML = `
-                    <div class="scenario-container fade-in">
-                        <div class="scenario-text">${scenarioText}</div>
-                        <div class="choices" id="choices">
-                            <button class="choice-btn choice-yes" onclick="game.makeChoice(true)">Yes</button>
-                            <button class="choice-btn choice-no" onclick="game.makeChoice(false)">No</button>
-                        </div>
-                        <div class="custom-input-container" id="custom-input-container">
-                            <small style="opacity: 0.6;">Advanced players: type custom responses</small><br>
-                            <input type="text" id="custom-input" placeholder="Or type your own response...">
-                            <button class="custom-submit" onclick="game.handleCustomInput()">Submit</button>
-                        </div>
-                    </div>
-                `;
-                this.updateScoreDisplay();
-            }
+    const gameContent = document.getElementById('game-content');
+    
+    // Generate scenario text based on type
+    let scenarioText = scenario.text;
+    if (!scenarioText) {
+        switch (scenario.type) {
+            case 'murderer-liar':
+                scenarioText = this.generateMurdererLiarText(scenario.friends);
+                break;
+            case 'book-trolley':
+                scenarioText = this.generateBookTrolleyText();
+                this.currentScenario.text = scenarioText; // Store for book logic
+                break;
+            case 'drowning-child':
+                scenarioText = this.generateDrowningChildText(scenario.clothes, scenario.children);
+                break;
+        }
+    }
+    
+    gameContent.innerHTML = `
+        <div class="scenario-container fade-in">
+            <div class="scenario-text">${scenarioText}</div>
+            <div style="font-size: 1.3em; font-weight: bold; text-align: center; margin: 30px 0; color: #ffd93d;">
+                ${scenario.question}
+            </div>
+            <div class="choices" id="choices">
+                <button class="choice-btn choice-yes" onclick="game.makeChoice(true)">Yes</button>
+                <button class="choice-btn choice-no" onclick="game.makeChoice(false)">No</button>
+            </div>
+            <div class="custom-input-container" id="custom-input-container">
+                <small style="opacity: 0.6;">Advanced players: type custom responses</small><br>
+                <input type="text" id="custom-input" placeholder="Or type your own response...">
+                <button class="custom-submit" onclick="game.handleCustomInput()">Submit</button>
+            </div>
+        </div>
+    `;
+    this.updateScoreDisplay();
+}
 
             handleCustomInput() {
                 const input = document.getElementById('custom-input').value.toLowerCase().trim();
