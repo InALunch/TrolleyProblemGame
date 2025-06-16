@@ -31,10 +31,17 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(255, 217, 61, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 217, 61, 0.03) 0%, transparent 50%);
             z-index: -1;
+            animation: subtleFloat 30s ease-in-out infinite;
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-10px, -10px) scale(1.02); }
+            66% { transform: translate(10px, -5px) scale(0.98); }
         }
 
         .game-container {
@@ -182,6 +189,7 @@
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
+            min-height: 200px;
         }
 
         .scenario-container::after {
@@ -204,6 +212,15 @@
             line-height: 1.8;
             margin-bottom: 25px;
             animation: typewriter 0.5s ease-out;
+            white-space: pre-wrap;
+        }
+
+        .scenario-text p {
+            margin-bottom: 20px;
+        }
+
+        .scenario-text p:last-child {
+            margin-bottom: 0;
         }
 
         @keyframes typewriter {
@@ -426,6 +443,22 @@
             box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
         }
 
+        .cannot-quit-message {
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .cannot-quit-message .result-text {
+            font-size: 1.4em;
+            color: #ff6b6b;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
         .ai-badge {
             display: inline-flex;
             align-items: center;
@@ -549,6 +582,7 @@
                 this.count = 0;
                 this.currentScenario = null;
                 this.hasShownIntro = false;
+                this.maxDilemmas = Math.floor(Math.random() * 6) + 15; // 15-20 dilemmas before forced ending
             }
 
             // Utility functions for generating scenario text
@@ -578,12 +612,16 @@
                 } else {
                     text += " Below, you see a trolley going down the tracks.";
                 }
-                text += " There is a very fat and oblivious man standing next to you. You believe that if you push him, you can stop the trolley.";
+                text += "\n\nThere is a very fat and oblivious man standing next to you. You believe that if you push him, you can stop the trolley.";
                 return text;
             }
 
             generateMurdererLiarText(friends) {
-                return `There's been a rampage of mass murders lately. School shootings, innocents kidnapped and tied to train tracks, and so forth. Fortunately, you live in a house with very secure walls. During an extremely bad weekend, ${friends} of your friends are especially worried, and you offer to hide them in your basement.<br><br>Your doorbell rang. Thinking that it might be another of your friends, you open the door, only to be greeted by a well-dressed man of large stature. He is holding an axe. A humongous, jagged, very bloody axe. He informs you that he's going around houses killing people, and proceeds to describe all of your friends downstairs. He asks you where your friends are.`;
+                return `There's been a rampage of mass murders lately. School shootings, innocents kidnapped and tied to train tracks, and so forth. Fortunately, you live in a house with very secure walls. During an extremely bad weekend, ${friends} of your friends are especially worried, and you offer to hide them in your basement.
+
+Your doorbell rang. Thinking that it might be another of your friends, you open the door, only to be greeted by a well-dressed man of large stature. He is holding an axe. A humongous, jagged, very bloody axe. He informs you that he's going around houses killing people, and proceeds to describe all of your friends downstairs.
+
+He asks you where your friends are.`;
             }
 
             generateBookTrolleyText() {
@@ -619,9 +657,13 @@
                 if (children === 0) {
                     return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see... wait, no, that's just the wind making waves. There are no children here.`;
                 } else if (children === 1) {
-                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that 1 child is drowning! Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
+                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that 1 child is drowning!
+
+Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
                 } else {
-                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that ${children} children are drowning! Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
+                    return `You are casually walking home from a long day at work, wearing an expensive suit and shoes that cost $${clothes} dollars. As you come across a shallow pond, you hear splashing. Looking around, you see that ${children} children are drowning!
+
+Nobody else is around. The pond is shallow so you're at no physical risk, but jumping in to save them will completely ruin your very expensive clothes.`;
                 }
             }
 
@@ -692,7 +734,9 @@
                     },
                     {
                         type: 'ai-generated',
-                        text: 'You\'re in a time-travel scenario. A trolley approaches young Hitler (age 5, innocent) on one track. On the other track: a random Victorian-era family of 4. You somehow know the future.',
+                        text: `You're in a time-travel scenario. A trolley approaches young Hitler (age 5, innocent) on one track. On the other track: a random Victorian-era family of 4.
+
+You somehow know the future.`,
                         question: 'Do you divert the trolley to save young Hitler?',
                         onChoice: (choice) => this.handleTimeTravel(choice)
                     }
@@ -712,7 +756,9 @@
                     },
                     {
                         type: 'harambe',
-                        text: 'A runaway trolley is barrelling towards Harambe, a gorilla. You can pull a lever to divert the trolley to another track, containing no one. But if you pull the lever, then Harambe would never become a meme, and nobody will ever remember his life.<br><br>What do you value more, Harambe or the idea of Harambe?',
+                        text: `A runaway trolley is barrelling towards Harambe, a gorilla. You can pull a lever to divert the trolley to another track, containing no one. But if you pull the lever, then Harambe would never become a meme, and nobody will ever remember his life.
+
+What do you value more, Harambe or the idea of Harambe?`,
                         question: 'Do you pull the lever to save Harambe?',
                         onChoice: (choice) => this.handleHarambe(choice)
                     },
@@ -737,7 +783,7 @@
                 return scenarios[Math.floor(Math.random() * scenarios.length)];
             }
 
-            // Choice handlers
+            // Choice handlers (unchanged from before)
             handleRandomTrolley(choice) {
                 const diff = this.currentScenario.lowertrack - this.currentScenario.uppertrack;
                 let utilResult = '', kantResult = '';
@@ -998,6 +1044,12 @@
             async nextScenario() {
                 this.count++;
                 
+                // Check if we've reached the maximum dilemmas
+                if (this.count > this.maxDilemmas) {
+                    this.forceEndGame();
+                    return;
+                }
+                
                 // Choose scenario type based on count
                 let scenario;
                 if (this.count === 1) {
@@ -1155,37 +1207,32 @@
             }
 
             attemptQuit() {
-                // After 3 dilemmas, start making it harder to quit
-                if (this.count >= 3) {
-                    const escapeChance = Math.max(0.1, 0.4 - (this.count - 3) * 0.05);
-                    
-                    if (Math.random() < escapeChance) {
-                        this.endGame();
-                    } else {
-                        this.showCannotQuit();
-                    }
-                } else {
-                    // Before 3 dilemmas, just let them quit normally
+                // 10-15% chance to actually quit
+                if (Math.random() < 0.125) {
                     this.endGame();
+                } else {
+                    this.showCannotQuit();
                 }
             }
 
             showCannotQuit() {
                 const gameContent = document.getElementById('game-content');
-                const responses = [
-                    "Life is a series of trolley problems. You cannot avoid them.",
-                    "You try to walk away, but somehow find yourself back at the lever.",
-                    "The universe laughs at your attempt to escape moral responsibility.",
-                    "Nice try, but ethical dilemmas are inescapable.",
-                    "The trolley of existence continues to barrel forward, with or without you."
-                ];
                 
                 gameContent.innerHTML = `
-                    <div class="result-container fade-in">
-                        <div class="result-text" style="font-size: 1.3em; text-align: center; color: #ff6b6b;">
-                            ${responses[Math.floor(Math.random() * responses.length)]}
-                        </div>
-                        <button class="continue-btn" onclick="game.continueGame()" style="margin-top: 30px;">Alright, Let's Keep Going</button>
+                    <div class="cannot-quit-message fade-in">
+                        <div class="result-text">Life is a series of trolley problems. You cannot avoid them.</div>
+                        <button class="continue-btn" onclick="game.continueGame()">Alright, Let's Keep Going</button>
+                    </div>
+                `;
+            }
+
+            forceEndGame() {
+                const gameContent = document.getElementById('game-content');
+                
+                gameContent.innerHTML = `
+                    <div class="cannot-quit-message fade-in">
+                        <div class="result-text">The universe has decided you've faced enough moral dilemmas... for now.</div>
+                        <button class="continue-btn" onclick="game.endGame()">See Final Judgment</button>
                     </div>
                 `;
             }
